@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{post.user.username}}'s Post</title>
+  <!-- ... other head elements ... -->
+  <style>
+    .reply-comment-item {
+      margin-left: 20px;
+      border-left: 2px solid #ccc;
+      padding-left: 10px;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <article class="post">
+      <header>
+        <h1>{{post.user.username}}'s Post</h1>
+        <p>Publicado el {{post.createdAt}}</p>
+      </header>
+      <p>{{post.body}}</p>
+      <!-- ... other post details ... -->
+    </article>
+
+    <section id="comments">
+      <h2>Comentarios</h2>
+      {{#if post.comments}}
+        <ul>
+     {{#each post.comments}}
+  <li class="{{#if this.parentId}}reply-comment-item{{/if}}">
+    {{this.user.username}}: {{this.body}}
+    {{#if this.imageUrl}}
+      <img src="{{this.imageUrl}}" alt="Comment image" style="max-width: 100px; max-height: 100px;">
+    {{/if}}
+    <!-- Existing buttons and reply form -->
+  </li>
+{{/each}}
+
+        </ul>
+      {{else}}
+        <p>Sé el primero en comentar.</p>
+      {{/if}}
+    </section>
+
+ <form action="/comments/post/{{post.id}}/comment" method="POST" enctype="multipart/form-data">
+      <textarea name="comment" placeholder="Añade un comentario..." required></textarea>
+      <input type="file" name="image" accept="image/*">
+      <button type="submit">Enviar Comentario</button>
+    </form>
+  </main>
+  <script>
+    document.querySelectorAll('.delete-comment').forEach(button => {
+      button.addEventListener('click', function() {
+        const commentId = this.getAttribute('data-comment-id');
+        deleteComment(commentId);
+      });
+    });
+
+    document.querySelectorAll('.reply-comment').forEach(button => {
+      button.addEventListener('click', function() {
+        const commentId = this.getAttribute('data-comment-id');
+        document.getElementById(`reply-form-${commentId}`).style.display = 'block';
+      });
+    });
+
+    function deleteComment(commentId) {
+      fetch(`/comments/comment/${commentId}/delete`, { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        credentials: 'same-origin'
+      })
+      .then(response => {
+        if (response.ok) {
+          // Logic to remove the comment from the DOM or refresh the page
+        } else {
+          console.error('Error al eliminar el comentario');
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    }
+  </script>
+</body>
+</html>
